@@ -1,0 +1,109 @@
+show databases;
+create database if not exists newdatabase;
+show databases;
+use newdatabase;
+
+create table Dept(
+DeptNo int primary key,
+DName varchar(100),
+Dloc varchar(100)
+);
+insert into Dept(DeptNo,DName,Dloc)values
+(10,'Engineering','Bengaluru'),
+(20,'Research','Bengaluru'),
+(30,'Sales','Bengaluru'),
+(40,'HR','Bengaluru'),
+(50,'Support','Bengaluru');
+select * from Dept;
+
+
+create table Employee(
+EmpNo int primary key,
+EName varchar(100),
+Mgr_No int,
+Hiredate date,
+Sal decimal(10,2),
+DeptNo int,
+foreign key(DeptNo) references Dept(DeptNo)
+);
+insert into Employee(EmpNo,Ename,Mgr_No,Hiredate,Sal,DeptNo) values
+(1001,'Asha',null,'2019-01-10',75000,10),
+(1002,'Rohan',1001,'2020-06-15',50000,10),
+(1003,'Priya',1001,'2021-03-20',52000,20),
+(1004,'Suresh',1002,'2018-11-01',6000,30),
+(1005,'Neha',1003,'2022-07-30',45000,20),
+(1006,'Vikram',1004,'2020-09-05',48000,30),
+(1007,'Kavita',null,'2017-05-12',90000,40);
+select * from Employee;
+
+
+create table Project(
+PNo int primary key,
+Ploc varchar(100),
+PName varchar(100)
+);
+insert into Project(PNo,Ploc,PName) values
+(501,'Bengaluru','Alpha Platform'),
+(502,'Hyderabad','Beta Analytics'),
+(503,'Mysuru','GammaSales Tool'),
+(504,'Chennai','Delta Support'),
+(505,'Delhi','Epsilon HR'),
+(506,'Bengaluru','ZetaMobile App');
+select * from Project;
+
+
+create table Assigned_To(
+EmpNo int,
+PNo int,
+Job_Role varchar(100),
+primary key(EmpNo,PNo),
+foreign key(EmpNo) references Employee(EmpNo),
+foreign key(PNo) references Project(PNo)
+);
+insert into Assigned_To(EmpNo,PNo,Job_Role) values
+(1001,501,'Lead Architect'),
+(1002,503,'Developer'),
+(1002,506,'Moblie Developer'),
+(1003,502,'Data Scientist'),
+(1004,503,'Sales Engineer'),
+(1005,502,'Analyst'),
+(1006,503,'Sales Rep'),
+(1007,505,'HR Manager');
+select * from Assigned_To;
+
+
+create table Incentives(
+EmpNo int,
+Incentive_Date date,
+Incentive_Amount decimal(10,2),
+primary key(EmpNo,Incentive_Date),
+foreign key(EmpNo) references Employee(EmpNo)
+);
+insert into Incentives(EmpNo,Incentives_Date,Incentive_Amount)values
+(1001,'2021-12-15',2000.00),
+(1002,'2022-06-01',1500.00),
+(1003,'2022-11-20',2000.00),
+(1005,'2023-03-10',2000.00),
+(1001,'2023-12-01',2500.00);
+select * from Incentives;
+
+
+select distinct a.EmpNo from Assigned_To a
+join Project p on a.PNo=p.PNo
+where p.Ploc in ('Bengaluru','Hyderabad', 'Mysuru');
+
+
+select e.EmpNo
+from Employee e
+where not exists(
+select 1
+from Incentives i
+where i.EmpNo=e.EmpNo
+);
+
+
+select e.EName, e.EmpNo, d.DName as DeptName, a.Job-Role, d.Dloc as Deptlocation, p.Ploc as ProjectLocation from Employee e
+join Dept d on e.DeptNo=d.DeptNo
+join Assigned_To a on e.EmpNo=a.EmpNo
+join Project p on a.PNo=p.PNo
+where d.Dloc=p.Ploc;
