@@ -107,3 +107,59 @@ join Dept d on e.DeptNo=d.DeptNo
 join Assigned_To a on e.EmpNo=a.EmpNo
 join Project p on a.PNo=p.PNo
 where d.Dloc=p.Ploc;
+
+
+SELECT m.EMPNO, m.ENAME, COUNT(e.EMPNO) AS num_reports
+FROM EMPLOYEE m
+JOIN EMPLOYEE e ON e.MGR_NO = m.EMPNO
+GROUP BY m.EMPNO, m.ENAME
+HAVING COUNT(e.EMPNO) = (
+    SELECT MAX(cnt) FROM (
+        SELECT COUNT(e2.EMPNO) AS cnt
+        FROM EMPLOYEE m2
+        LEFT JOIN EMPLOYEE e2 ON e2.MGR_NO = m2.EMPNO
+        GROUP BY m2.EMPNO
+    ) t
+);
+
+
+
+SELECT m.EMPNO, m.ENAME, m.SAL AS manager_sal, AVG(e.SAL) AS avg_report_sal
+FROM EMPLOYEE m
+JOIN EMPLOYEE e ON e.MGR_NO = m.EMPNO
+GROUP BY m.EMPNO, m.ENAME, m.SAL
+HAVING m.SAL > AVG(e.SAL);
+
+
+SELECT d.DEPTNO, d.DNAME,
+       mgr.EMPNO AS top_manager_no, mgr.ENAME AS top_manager_name,
+       sec.EMPNO AS second_level_no, sec.ENAME AS second_level_name
+FROM DEPT d
+JOIN EMPLOYEE mgr ON mgr.DEPTNO = d.DEPTNO AND mgr.MGR_NO IS NULL  
+JOIN EMPLOYEE sec ON sec.MGR_NO = mgr.EMPNO                    
+ORDER BY d.DEPTNO, sec.EMPNO;
+
+
+INSERT INTO INCENTIVES VALUES
+(1001, '2019-01-05', 2000.00),
+(1002, '2019-01-10', 1500.00),
+(1003, '2019-01-15', 3000.00),
+(1004, '2019-01-20', 2500.00),
+(1005, '2019-01-25', 1000.00);
+
+
+SELECT EMPNO, INCENTIVE_DATE, INCENTIVE_AMOUNT
+FROM (
+    SELECT i.*,
+           DENSE_RANK() OVER (ORDER BY i.INCENTIVE_AMOUNT DESC) AS rnk
+    FROM INCENTIVES i
+    WHERE YEAR(i.INCENTIVE_DATE) = 2019
+      AND MONTH(i.INCENTIVE_DATE) = 1
+) t
+WHERE rnk = 2;
+
+
+SELECT e.EMPNO, e.ENAME, e.DEPTNO, m.EMPNO AS MGR_NO, m.ENAME AS MGR_NAME, m.DEPTNO AS MGR_DEPTNO
+FROM EMPLOYEE e
+JOIN EMPLOYEE m ON e.MGR_NO = m.EMPNO
+WHERE e.DEPTNO = m.DEPTNO;
